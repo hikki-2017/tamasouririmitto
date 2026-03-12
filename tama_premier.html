@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>変態総理への道 〜たまの野望〜</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=M+PLUS+1p:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #0a0a14;
+    --panel: #10101e;
+    --gold: #c9a84c;
+    --gold2: #f0d080;
+    --red: #cc2244;
+    --text: #e8e0d0;
+    --shadow: rgba(200,168,76,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+
+  /* ===== TITLE SCREEN ===== */
+  #title-screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, #1a1030 0%, #0a0a14 70%);
+    z-index: 100;
+    cursor: pointer;
+  }
+  #title-screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200,168,76,0.03) 2px, rgba(200,168,76,0.03) 4px);
+    pointer-events: none;
+  }
+  .title-flag {
+    font-size: 6rem;
+    animation: flagWave 2s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+  @keyframes flagWave {
+    0%,100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+  }
+  .title-main {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--gold2);
+    text-shadow: 0 0 30px rgba(200,168,76,0.8), 0 0 60px rgba(200,168,76,0.4);
+    letter-spacing: 0.15em;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+  .title-sub {
+    font-size: 1.1rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    margin-bottom: 3rem;
+    opacity: 0.8;
+  }
+  .title-start {
+    font-size: 1rem;
+    color: var(--text);
+    opacity: 0.6;
+    letter-spacing: 0.2em;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:0.6} 50%{opacity:0.1} }
+
+  .title-decoration {
+    position: absolute;
+    font-size: 8rem;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  .title-decoration.tl { top: 5%; left: 5%; }
+  .title-decoration.tr { top: 5%; right: 5%; transform: scaleX(-1); }
+  .title-decoration.bl { bottom: 5%; left: 5%; }
+  .title-decoration.br { bottom: 5%; right: 5%; }
+
+  /* ===== GAME SCREEN ===== */
+  #game-screen {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+  }
+
+  /* Background */
+  #bg-layer {
+    position: absolute; inset: 0;
+    background: #1a1428;
+    transition: background 0.5s;
+    overflow: hidden;
+  }
+  #bg-layer::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.7) 100%);
+  }
+
+  /* Character */
+  #char-layer {
+    position: absolute;
+    bottom: 30%;
+    left: 50%; transform: translateX(-50%);
+    font-size: clamp(6rem, 15vw, 12rem);
+    transition: all 0.4s;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.8));
+    z-index: 2;
+  }
+
+  /* Status bar */
+  #status-bar {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(200,168,76,0.3);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+  .status-label { color: var(--gold); margin-right: 0.5rem; }
+  .status-bar-inner {
+    display: inline-block;
+    width: 100px; height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    vertical-align: middle;
+    overflow: hidden;
+  }
+  .status-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+  }
+  .chapter-label {
+    color: var(--gold);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+    opacity: 0.8;
+  }
+
+  /* Text box */
+  #text-box {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 32%;
+    background: linear-gradient(to top, rgba(5,5,15,0.97) 0%, rgba(5,5,15,0.92) 80%, transparent 100%);
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem 2rem 1.5rem;
+    z-index: 5;
+    cursor: pointer;
+  }
+  #speaker-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--gold2);
+    margin-bottom: 0.5rem;
+    padding: 0.2rem 0.8rem;
+    background: rgba(200,168,76,0.15);
+    border-left: 3px solid var(--gold);
+    display: inline-block;
+    max-width: fit-content;
+    letter-spacing: 0.1em;
+  }
+  #dialogue-text {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    line-height: 1.9;
+    letter-spacing: 0.05em;
+    max-width: 800px;
+    min-height: 3em;
+  }
+  .cursor-blink {
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: blink 0.8s ease-in-out infinite;
+  }
+
+  /* Choices */
+  #choice-box {
+    position: absolute;
+    bottom: 35%;
+    left: 50%; transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: min(90%, 600px);
+    z-index: 20;
+  }
+  .choice-btn {
+    background: rgba(10,10,20,0.9);
+    border: 1px solid rgba(200,168,76,0.4);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    padding: 0.9rem 1.5rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    backdrop-filter: blur(10px);
+  }
+  .choice-btn:hover {
+    background: rgba(200,168,76,0.2);
+    border-color: var(--gold);
+    color: var(--gold2);
+    transform: translateX(6px);
+    box-shadow: 0 0 20px rgba(200,168,76,0.2);
+  }
+  .choice-btn::before { content: '▶ '; color: var(--gold); font-size: 0.7em; }
+
+  /* Scene transition */
+  #transition {
+    position: fixed; inset: 0;
+    background: black;
+    z-index: 200;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  /* End screen */
+  #end-screen {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, #1a0a0a 0%, #0a0a0a 70%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    text-align: center;
+    padding: 2rem;
+  }
+  #end-screen.good-end {
+    background: radial-gradient(ellipse at center, #0a1a0a 0%, #0a0a0a 70%);
+  }
+  .end-emoji { font-size: 6rem; margin-bottom: 1rem; }
+  .end-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+  .end-bad .end-title { color: var(--red); text-shadow: 0 0 20px rgba(200,34,68,0.5); }
+  .end-good .end-title { color: var(--gold2); text-shadow: 0 0 20px rgba(200,168,76,0.5); }
+  .end-desc { font-size: 1rem; color: var(--text); opacity: 0.8; line-height: 1.8; max-width: 500px; margin-bottom: 2rem; }
+  .restart-btn {
+    background: none;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    padding: 0.8rem 2rem;
+    cursor: pointer;
+    letter-spacing: 0.2em;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .restart-btn:hover { background: var(--gold); color: var(--bg); }
+
+  /* Sound toggle */
+  #sound-toggle {
+    position: absolute;
+    top: 1rem; left: 1rem;
+    background: rgba(10,10,20,0.7);
+    border: 1px solid rgba(200,168,76,0.3);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10;
+    transition: all 0.2s;
+  }
+  #sound-toggle:hover { border-color: var(--gold); }
+
+  /* BG scenes */
+  .bg-diet { background: linear-gradient(135deg, #1a1a3a 0%, #2a2050 50%, #1a1a3a 100%) !important; }
+  .bg-street { background: linear-gradient(135deg, #1a2a1a 0%, #0a1a0a 50%, #152015 100%) !important; }
+  .bg-police { background: linear-gradient(135deg, #3a1a1a 0%, #2a0a0a 50%, #1a0505 100%) !important; }
+  .bg-office { background: linear-gradient(135deg, #1a2030 0%, #101828 50%, #0a1020 100%) !important; }
+  .bg-campaign { background: linear-gradient(135deg, #302010 0%, #201808 50%, #181008 100%) !important; }
+
+  /* Particle effects */
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.5rem;
+    animation: floatUp 2s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(-100px) rotate(360deg); }
+  }
+
+  /* Chapter title overlay */
+  #chapter-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+  }
+  .chapter-num { font-size: 0.8rem; color: var(--gold); letter-spacing: 0.5em; margin-bottom: 0.5rem; }
+  .chapter-title-text { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 900; color: var(--gold2); text-align: center; }
+
+  /* Confetti for good end */
+  .confetti { position: absolute; font-size: 2rem; animation: confettiFall 3s linear infinite; pointer-events: none; }
+  @keyframes confettiFall {
+    0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Title Screen -->
+<div id="title-screen" onclick="startGame()">
+  <div class="title-decoration tl">🎌</div>
+  <div class="title-decoration tr">🎌</div>
+  <div class="title-decoration bl">🏛️</div>
+  <div class="title-decoration br">🏛️</div>
+  <div class="title-flag">🐱</div>
+  <div class="title-main">変態総理への道<br>〜たまの野望〜</div>
+  <div class="title-sub">一匹の変態が日本を変える</div>
+  <div class="title-start">── クリックしてスタート ──</div>
+</div>
+
+<!-- Game Screen -->
+<div id="game-screen">
+  <div id="bg-layer"></div>
+
+  <div id="sound-toggle" onclick="toggleSound()" title="BGM切替">🔊</div>
+
+  <div id="status-bar">
+    <div class="chapter-label" id="chapter-label">第一章</div>
+    <div><span class="status-label">人望</span><span class="status-bar-inner"><span class="status-bar-fill" id="trust-bar" style="width:30%"></span></span></div>
+    <div style="margin-top:4px"><span class="status-label">怪しさ</span><span class="status-bar-inner"><span class="status-bar-fill" id="weird-bar" style="width:70%;background:linear-gradient(90deg,#cc44aa,#ff88dd)"></span></span></div>
+  </div>
+
+  <div id="char-layer">🐱</div>
+
+  <div id="text-box" onclick="nextLine()">
+    <div id="speaker-name">ナレーター</div>
+    <div id="dialogue-text"></div>
+  </div>
+
+  <div id="choice-box"></div>
+</div>
+
+<!-- Chapter overlay -->
+<div id="chapter-overlay">
+  <div class="chapter-num" id="chapter-num-text">第 一 章</div>
+  <div class="chapter-title-text" id="chapter-title-text">変態、政治を志す</div>
+</div>
+
+<!-- End screen -->
+<div id="end-screen">
+  <div class="end-emoji" id="end-emoji">😂</div>
+  <div class="end-title" id="end-title">ゲームオーバー</div>
+  <div class="end-desc" id="end-desc"></div>
+  <button class="restart-btn" onclick="restartGame()">もう一度プレイする</button>
+</div>
+
+<!-- Transition overlay -->
+<div id="transition"></div>
+
+<audio id="bgm" loop>
+  <source src="data:audio/wav;base64," type="audio/wav">
+</audio>
+
+<script>
+// ===== STORY DATA =====
+const story = {
+  start: {
+    bg: 'bg-street',
+    char: '🐱',
+    chapter: '第一章：変態、政治を志す',
+    lines: [
+      { speaker: 'ナレーター', text: '西暦202X年。日本のどこかの街角。一匹の変態——たまは、今日も路地裏で謎の活動を行っていた。' },
+      { speaker: 'たま', text: '「くっくっく……俺はいつもこんな生活でいいのか？いや、違う！俺には、もっと大きな使命があるはずだ……！」' },
+      { speaker: 'ナレーター', text: 'たまはスマホのニュースを見ていた。「内閣支持率3%、国民の怒り爆発」という見出し。' },
+      { speaker: 'たま', text: '「そうだ！！俺が総理大臣になれば、この国は変わる……！いや、俺以外に誰がやるというんだ！！」' },
+      { speaker: 'ナレーター', text: 'こうして、一匹の変態の無謀な野望が始まった——。' },
+    ],
+    choices: [
+      { text: '地元の区議会議員選挙に出馬する', next: 'chapter2_a' },
+      { text: 'まずSNSで注目を集める作戦を練る', next: 'chapter2_b' },
+    ]
+  },
+
+  chapter2_a: {
+    bg: 'bg-campaign',
+    char: '🐱',
+    chapter: '第二章：選挙戦勃発',
+    lines: [
+      { speaker: 'ナレーター', text: '選挙事務所（たまのアパートの一室）。たまは選挙ポスターを貼り出した。' },
+      { speaker: 'ポスター', text: '「変態代表・たま。変えます！この国を！」' },
+      { speaker: 'たま', text: '「完璧だ。これを見た国民は絶対に俺に投票する……！」' },
+      { speaker: '通行人A', text: '「あの……ポスターの候補者、なんか変な人ですよね？」' },
+      { speaker: '通行人B', text: '「でもなんか目を引くよね、あのポスター」' },
+      { speaker: 'ナレーター', text: '選挙活動が始まった。たまは街頭演説に挑む。作戦を選べ！' },
+    ],
+    choices: [
+      { text: '「変態なりに真剣に政策を語る」演説をする', next: 'chapter3_win' },
+      { text: '目立つために奇抜なパフォーマンスだけで勝負', next: 'chapter3_risky' },
+    ]
+  },
+
+  chapter2_b: {
+    bg: 'bg-office',
+    char: '🐱',
+    chapter: '第二章：バズりへの挑戦',
+    lines: [
+      { speaker: 'ナレーター', text: 'たまはSNSでバズることを決意。まずプロフィールを書いた。' },
+      { speaker: 'たまのプロフィール', text: '「自称・次期総理。変態。政治改革を志す。フォロワー0人。」' },
+      { speaker: 'たま', text: '「よし！これを投稿すれば一夜にしてフォロワー100万人……！」' },
+      { speaker: 'ナレーター', text: '投稿直後。フォロワー：2人（たま自身と謎のBot）' },
+      { speaker: 'たま', text: '「なぜだ……！作戦変更が必要だ！」' },
+      { speaker: 'ナレーター', text: 'たまの次の戦略は？' },
+    ],
+    choices: [
+      { text: '政治評論家にリプライで論戦を挑む', next: 'chapter3_win' },
+      { text: '有名人になりすます', next: 'bad_end_sns' },
+    ]
+  },
+
+  chapter3_win: {
+    bg: 'bg-diet',
+    char: '🐱',
+    chapter: '第三章：国会への道',
+    lines: [
+      { speaker: 'ナレーター', text: '数ヶ月後。たまの奮闘が実を結び、なんと区議会議員に当選してしまった。' },
+      { speaker: 'たま', text: '「やった……やったぞ！第一歩だ！次は衆議院だ！！」' },
+      { speaker: 'ナレーター', text: '区議会でのたまは、意外にも真剣に地元の問題に取り組んでいた。' },
+      { speaker: '区民', text: '「あの変態候補、なんか頑張ってるじゃないですか……？」' },
+      { speaker: 'たま', text: '「くっ……変態と呼ばれても、俺には信念がある！このまま衆議院へ！！」' },
+      { speaker: 'ナレーター', text: '衆議院選挙。たまは全国区で立候補を決意した。ここが正念場だ！' },
+    ],
+    choices: [
+      { text: '地道に全国を行脚して支持を集める', next: 'chapter4_final' },
+      { text: '怪しい政治家と裏取引をして当選しようとする', next: 'bad_end_corrupt' },
+    ]
+  },
+
+  chapter3_risky: {
+    bg: 'bg-campaign',
+    char: '😵',
+    chapter: '第三章：炎上',
+    lines: [
+      { speaker: 'ナレーター', text: 'たまは選挙カーの上でダンスを踊り、替え歌を歌い続けた。' },
+      { speaker: 'たま', text: '「♪変えよう！この国を！変態パワーでドーン！」' },
+      { speaker: 'ニュース速報', text: '「炎上！区議選候補が奇抜すぎるパフォーマンス、動画再生回数1000万回突破」' },
+      { speaker: 'たま', text: '「バズった……！これは勝ったも同然！！」' },
+      { speaker: 'ナレーター', text: '選挙結果：たまの得票数 = 42票（全候補中最下位）' },
+      { speaker: 'たま', text: '「な、なぜだ……バズったのに……！」' },
+    ],
+    choices: [
+      { text: '反省して一から出直す', next: 'chapter3_win' },
+      { text: '「選挙制度が悪い」と叫んで暴れる', next: 'bad_end_arrested' },
+    ]
+  },
+
+  chapter4_final: {
+    bg: 'bg-diet',
+    char: '🐱',
+    chapter: '第四章：総理への階段',
+    lines: [
+      { speaker: 'ナレーター', text: '衆議院議員・たまは、3年間の下積みの末、党内で「変態派」を結成。徐々に頭角を現していった。' },
+      { speaker: 'たま', text: '「変態であることは恥ではない！俺たちのような変人が、この国を変えるんだ！」' },
+      { speaker: '党内議員', text: '「たま先生……なんかあの人、だんだんすごい人に見えてきた」' },
+      { speaker: 'ナレーター', text: 'そして、ついにその日が来た。内閣不信任案可決。総裁選へ。たまは立候補を表明した。' },
+      { speaker: 'たま', text: '「ここまで来た……！俺の夢まで、あと一歩だ！！」' },
+      { speaker: 'ナレーター', text: '総裁選当日。最後の演説をどうする？' },
+    ],
+    choices: [
+      { text: '「変態であることへの誇り」を堂々と語る名演説', next: 'good_end' },
+      { text: 'ライバル候補の悪口を言いまくる', next: 'bad_end_speech' },
+    ]
+  },
+
+  good_end: {
+    type: 'end',
+    ending: 'good',
+    emoji: '🎊',
+    title: '総理大臣・たま、誕生！',
+    desc: '「私は変態です。でも、この国を愛する変態です！」\n\nたまの演説は全国民の心を動かした。\n\n総裁選に勝利したたまは、\nついに第○○代内閣総理大臣に就任した。\n\n就任後のたまの言葉：\n「変態よ、立ち上がれ。この国は変わる！」\n\n＊　＊　＊\nTRUE END',
+  },
+
+  bad_end_arrested: {
+    type: 'end',
+    ending: 'bad',
+    emoji: '🚔',
+    title: 'BAD END：お縄',
+    desc: '選挙事務所の前で騒ぎを起こしたたまは、\n公務執行妨害で現行犯逮捕された。\n\n「こんなはずじゃ……！」\n\n警察官：「なんでこういう人ほど元気なんですかね……」\n\n総理大臣への道は、\n留置場の鉄格子の向こうに消えた——。',
+  },
+
+  bad_end_sns: {
+    type: 'end',
+    ending: 'bad',
+    emoji: '📱',
+    title: 'BAD END：炎上逮捕',
+    desc: '有名政治家になりすましたたまのアカウントは、\n即座に本人から報告され、\n警察に通報された。\n\n「なんで俺だけ……！」\n\n偽計業務妨害で書類送検。\n総理大臣への道は、\nSNSのスクショとともに拡散されて終わった。',
+  },
+
+  bad_end_corrupt: {
+    type: 'end',
+    ending: 'bad',
+    emoji: '📰',
+    title: 'BAD END：スキャンダル発覚',
+    desc: '怪しい政治家との密約が週刊誌にスッパ抜かれた。\n\n見出し：\n「変態議員・たま、政治献金疑惑で説明責任を！」\n\n記者会見でたまは絶叫した——\n「これは嵌められた！！俺は無実だ！！」\n\n……誰も信じなかった。\n議員辞職勧告決議案が可決された。',
+  },
+
+  bad_end_speech: {
+    type: 'end',
+    ending: 'bad',
+    emoji: '😤',
+    title: 'BAD END：最後の炎上',
+    desc: '演説中、ライバル候補の悪口を言い続けたたまは、\n党員全員を敵に回した。\n\n総裁選の得票数：たま = 1票（自分だけ）\n\n「俺のどこがいけないんだ！！」\n\nその後たまは党を離党。\n新党「変態党」を立ち上げるも、\n党員は現在もたま一人である。',
+  },
+};
+
+// ===== STATE =====
+let currentScene = null;
+let lineIndex = 0;
+let isTyping = false;
+let typingTimer = null;
+let trust = 30;
+let weird = 70;
+let soundOn = true;
+let choiceShown = false;
+let audioCtx = null;
+let currentBgNode = null;
+
+// ===== AUDIO =====
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playBeep(freq = 440, dur = 0.05, vol = 0.1) {
+  if (!soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = freq;
+    o.type = 'sine';
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function playClick() { playBeep(600, 0.05, 0.08); }
+function playChoiceSound() { playBeep(800, 0.1, 0.12); }
+
+function startBGM() {
+  if (!soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const notes = [261, 293, 329, 349, 392, 440, 493, 523];
+    let time = ctx.currentTime;
+    function scheduleBGM() {
+      if (!soundOn) return;
+      const pattern = [0, 2, 4, 2, 0, 4, 2, 0, 4, 2, 3, 4];
+      pattern.forEach((n, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = notes[n % notes.length];
+        o.type = 'triangle';
+        const t = time + i * 0.25;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.03, t + 0.05);
+        g.gain.linearRampToValueAtTime(0, t + 0.2);
+        o.start(t); o.stop(t + 0.25);
+      });
+      time += pattern.length * 0.25;
+      setTimeout(scheduleBGM, (pattern.length * 0.25 - 0.5) * 1000);
+    }
+    scheduleBGM();
+  } catch(e) {}
+}
+
+function toggleSound() {
+  soundOn = !soundOn;
+  document.getElementById('sound-toggle').textContent = soundOn ? '🔊' : '🔇';
+  if (soundOn) startBGM();
+}
+
+// ===== GAME ENGINE =====
+function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  if (soundOn) startBGM();
+  loadScene('start');
+}
+
+function showChapterOverlay(title, cb) {
+  const overlay = document.getElementById('chapter-overlay');
+  const parts = title.split('：');
+  document.getElementById('chapter-num-text').textContent = parts[0] || title;
+  document.getElementById('chapter-title-text').textContent = parts[1] || '';
+  overlay.style.display = 'flex';
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    if (cb) cb();
+  }, 2000);
+}
+
+function loadScene(sceneKey) {
+  fadeTransition(() => {
+    currentScene = story[sceneKey];
+    lineIndex = 0;
+    choiceShown = false;
+
+    if (currentScene.type === 'end') {
+      showEndScreen(currentScene);
+      return;
+    }
+
+    // Set background
+    const bg = document.getElementById('bg-layer');
+    bg.className = currentScene.bg || '';
+
+    // Update char
+    document.getElementById('char-layer').textContent = currentScene.char || '🐱';
+
+    // Hide choices
+    document.getElementById('choice-box').style.display = 'none';
+
+    // Show chapter overlay if new chapter
+    if (currentScene.chapter) {
+      const chapterKey = currentScene.chapter.split('：')[0];
+      document.getElementById('chapter-label').textContent = chapterKey;
+      showChapterOverlay(currentScene.chapter, () => {
+        showLine();
+      });
+    } else {
+      showLine();
+    }
+  });
+}
+
+function showLine() {
+  if (lineIndex >= currentScene.lines.length) {
+    showChoices();
+    return;
+  }
+  const line = currentScene.lines[lineIndex];
+  document.getElementById('speaker-name').textContent = line.speaker;
+
+  const textEl = document.getElementById('dialogue-text');
+  textEl.innerHTML = '';
+  isTyping = true;
+
+  let i = 0;
+  const text = line.text;
+  function typeChar() {
+    if (i < text.length) {
+      textEl.textContent = text.slice(0, i + 1);
+      if (i % 3 === 0) playBeep(300 + Math.random() * 200, 0.03, 0.04);
+      i++;
+      typingTimer = setTimeout(typeChar, 40);
+    } else {
+      isTyping = false;
+      textEl.innerHTML = text + '<span class="cursor-blink"></span>';
+    }
+  }
+  typeChar();
+}
+
+function nextLine() {
+  if (choiceShown) return;
+  if (isTyping) {
+    clearTimeout(typingTimer);
+    isTyping = false;
+    const line = currentScene.lines[lineIndex];
+    const textEl = document.getElementById('dialogue-text');
+    textEl.innerHTML = line.text + '<span class="cursor-blink"></span>';
+    return;
+  }
+  playClick();
+  lineIndex++;
+  showLine();
+}
+
+function showChoices() {
+  if (!currentScene.choices) return;
+  choiceShown = true;
+  const box = document.getElementById('choice-box');
+  box.innerHTML = '';
+  box.style.display = 'flex';
+
+  currentScene.choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice.text;
+    btn.onclick = () => {
+      playChoiceSound();
+      box.style.display = 'none';
+      choiceShown = false;
+      // Update stats
+      if (choice.next.includes('bad')) { trust = Math.max(0, trust - 20); }
+      else { trust = Math.min(100, trust + 20); }
+      updateBars();
+      addParticles(choice.next.includes('bad') ? ['💔','❌','😱'] : ['⭐','💪','🔥']);
+      loadScene(choice.next);
+    };
+    box.appendChild(btn);
+  });
+}
+
+function updateBars() {
+  document.getElementById('trust-bar').style.width = trust + '%';
+  document.getElementById('weird-bar').style.width = weird + '%';
+}
+
+function addParticles(emojis) {
+  const bg = document.getElementById('bg-layer');
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      p.style.left = (20 + Math.random() * 60) + '%';
+      p.style.bottom = '35%';
+      bg.appendChild(p);
+      setTimeout(() => p.remove(), 2000);
+    }, i * 200);
+  }
+}
+
+function fadeTransition(cb) {
+  const t = document.getElementById('transition');
+  t.style.opacity = '1';
+  setTimeout(() => {
+    cb();
+    setTimeout(() => { t.style.opacity = '0'; }, 100);
+  }, 400);
+}
+
+function showEndScreen(scene) {
+  const el = document.getElementById('end-screen');
+  el.style.display = 'flex';
+  el.className = scene.ending === 'good' ? 'good-end' : '';
+  document.getElementById('end-emoji').textContent = scene.emoji;
+  document.getElementById('end-title').textContent = scene.title;
+  const descEl = document.getElementById('end-desc');
+  descEl.textContent = scene.desc;
+  const endTitle = document.getElementById('end-title');
+  endTitle.className = scene.ending === 'good' ? 'end-title end-good' : 'end-title end-bad';
+
+  if (scene.ending === 'good') {
+    addConfetti();
+    playBeep(523, 0.3, 0.15);
+    setTimeout(() => playBeep(659, 0.3, 0.15), 300);
+    setTimeout(() => playBeep(784, 0.5, 0.15), 600);
+  } else {
+    playBeep(200, 0.5, 0.1);
+  }
+}
+
+function addConfetti() {
+  const endEl = document.getElementById('end-screen');
+  const emojis = ['🎉','🎊','⭐','🌟','✨','🎌'];
+  for (let i = 0; i < 20; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.animationDelay = Math.random() * 2 + 's';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    endEl.appendChild(c);
+  }
+}
+
+function restartGame() {
+  const el = document.getElementById('end-screen');
+  el.style.display = 'none';
+  // remove confetti
+  el.querySelectorAll('.confetti').forEach(c => c.remove());
+  trust = 30; weird = 70;
+  updateBars();
+  loadScene('start');
+}
+</script>
+</body>
+</html>
